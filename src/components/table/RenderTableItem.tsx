@@ -1,8 +1,7 @@
-import { Chip, Tooltip, User } from "@nextui-org/react";
-import { EyeIcon } from "../icons/EyeIcon";
+import { Chip, Link, Tooltip, User } from "@nextui-org/react";
 import { EditIcon } from "../icons/Edit";
 import { DeleteIcon } from "../icons/DeleteIcon";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const statusColorMap = {
   active: "success",
@@ -11,8 +10,13 @@ const statusColorMap = {
 };
 
 export default function RenderTableItem({dataInfo, columnKey}: any) {
-  
+  const router = useRouter();
   const cellValue = dataInfo[columnKey];
+
+  const goEdit = (e: any, id: string) => {
+    e.preventDefault();
+    router.push(`/articles/edit/${id}`);
+  }
 
   switch (columnKey) {
     case "title":
@@ -62,13 +66,11 @@ export default function RenderTableItem({dataInfo, columnKey}: any) {
     case "actions":
       return (
         <div className="relative flex items-center gap-2">
-          <Tooltip content="Details">
-            <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-              <EyeIcon />
-            </span>
-          </Tooltip>
           <Tooltip content="Edit">
-            <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+            <span
+              className="text-lg text-default-400 cursor-pointer active:opacity-50"
+              onClick={(e) => goEdit(e, dataInfo._id)}
+            >
               <EditIcon />
             </span>
           </Tooltip>

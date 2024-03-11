@@ -25,3 +25,9 @@ body {
     text-wrap: balance;
   }
 }
+
+.page-title{
+  font-size: 18;
+  font-weight: bold;
+  line-height: 40px;
+}
