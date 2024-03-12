@@ -1,5 +1,6 @@
 'use client';
 
+import { get } from "@/api/fetch";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react"
 
@@ -11,9 +12,8 @@ export default function Page({ params }: { params: { id: string } }) {
     getArticleDetails();
   }, []);
   const getArticleDetails = async () => {
-    const res = await fetch(`http://localhost:3001/article/${articleId}`)
-    const detail = await res.json();
-    setDetail(detail.data || null);
+    const {code, data, msg} = await get(`/articles/${articleId}`)
+    setDetail(data || null);
   }
   if(detail) {
     return <ArticleDetail detail={detail} />

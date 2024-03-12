@@ -25,7 +25,7 @@ export default function Page() {
   useEffect(() => {
     const getList = async () => {
       try {
-        const {code, data, msg} = await get('http://localhost:3001/practices');
+        const {code, data, msg} = await get('/practices');
         if(code === 0) {
           const {columns, initial_visible_columns} = formatTableData(data);
           setColumns(columns);
@@ -69,11 +69,7 @@ export default function Page() {
 
   return (
     <>
-      {/* <div className="flex">
-        <span onClick={() => router.back()}>{`<`}</span>
-        <h1 className="text-lg font-bold">题库页</h1>
-      </div>
-      <LBreadcrumbs /> */}
+      <h1 className="text-lg font-bold">题库</h1>
       {
         columns.length && initialVisibleColumns.length ? 
         <Suspense fallback={<div>Loading...</div>}>

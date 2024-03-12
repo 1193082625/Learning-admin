@@ -1,7 +1,6 @@
 'use client';
 
 import { get } from "@/api/fetch";
-import LBreadcrumbs from "@/components/Breadcrumbs";
 import { DeleteIcon } from "@/components/icons/DeleteIcon";
 import { EditIcon } from "@/components/icons/Edit";
 import TableCom, { TableColumn } from "@/components/table";
@@ -25,7 +24,7 @@ export default function Page() {
   useEffect(() => {
     const getList = async () => {
       try {
-        const {code, data, msg} = await get('http://localhost:3001/user');
+        const {code, data, msg} = await get('/user');
         if(code === 0) {
           const {columns, initial_visible_columns} = formatTableData(data);
           setColumns(columns);
@@ -69,11 +68,7 @@ export default function Page() {
 
   return (
     <>
-      <div className="flex">
-        <span onClick={() => router.back()}>{`<`}</span>
-        <h1 className="text-lg font-bold">文章页</h1>
-      </div>
-      <LBreadcrumbs />
+      <h1 className="text-lg font-bold">用户管理</h1>
       {
         columns.length && initialVisibleColumns.length ? 
         <Suspense fallback={<div>Loading...</div>}>

@@ -7,6 +7,7 @@ import { DeleteIcon } from "@/components/icons/DeleteIcon";
 import { EditIcon } from "@/components/icons/Edit";
 import TableCom, { TableColumn } from "@/components/table";
 import { TableActions } from "@/components/table/RenderTableItem";
+import { useUserStore } from "@/store/userStore";
 import { formatTableData } from "@/utils/formatData";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -18,6 +19,7 @@ const statusOptions = [
 ]
 
 export default function Page() {
+  const logout = useUserStore(state => state.logout);
   const [articleList, setArticleList] = useState([]);
   const [columns, setColumns] = useState<TableColumn[]>([]);
   const [initialVisibleColumns, setInitialVisibleColumns] = useState<string[]>([]);
@@ -26,15 +28,19 @@ export default function Page() {
   useEffect(() => {
     const getList = async () => {
       try {
-        const {code, data, msg} = await get('http://localhost:3001/article');
+        const {code, data, msg} = await get('/articles');
         if(code === 0) {
           const {columns, initial_visible_columns} = formatTableData(data);
           setColumns(columns);
           setInitialVisibleColumns(initial_visible_columns);
           setArticleList(data || []);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching articles:', error);
+        if([401, 403].includes(error?.code)) {
+          logout();
+          router.replace('/')
+        }
       }
     };
     getList();
@@ -70,11 +76,6 @@ export default function Page() {
 
   return (
     <>
-      {/* <div className="flex">
-        <span onClick={() => router.back()}>{`<`}</span>
-        <h1 className="text-lg font-bold">文章页</h1>
-      </div> */}
-      <Header />
       {
         columns.length && initialVisibleColumns.length ? 
         <Suspense fallback={<div>Loading...</div>}>

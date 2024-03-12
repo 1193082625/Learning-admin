@@ -1,8 +1,6 @@
 'use client';
 
 import {get} from "@/api/fetch";
-import LBreadcrumbs from "@/components/Breadcrumbs";
-import { DeleteIcon } from "@/components/icons/DeleteIcon";
 import { EditIcon } from "@/components/icons/Edit";
 import TableCom, { TableColumn } from "@/components/table";
 import { TableActions } from "@/components/table/RenderTableItem";
@@ -10,7 +8,7 @@ import { formatTableData } from "@/utils/formatData";
 import { useDisclosure } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import HandleFeedback, { SelectOption } from "./handleFeedback";
+import HandleFeedback from "./handleFeedback";
 
 const statusOptions = [
   {name: "CLOSED", uid: "closed"},
@@ -42,7 +40,7 @@ export default function Page() {
 
   useEffect(() => {
     const getList = async () => {
-      const {code, data, msg} = await get('http://localhost:3001/feedback');
+      const {code, data, msg} = await get('/feedback');
       if(code === 0) {
         const {columns, initial_visible_columns} = formatTableData(data);
         setColumns(columns);
@@ -57,11 +55,7 @@ export default function Page() {
 
   return (
     <>
-    <div className="flex">
-      <span onClick={() => router.back()}>{`<`}</span>
-      <h1 className="text-lg font-bold">问题反馈</h1>
-    </div>
-    <LBreadcrumbs />
+    <h1 className="text-lg font-bold">问题反馈</h1>
     {
       columns.length && initialVisibleColumns.length ? 
         <Suspense fallback={<div>Loading...</div>}>

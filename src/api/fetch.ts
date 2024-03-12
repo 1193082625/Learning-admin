@@ -1,4 +1,5 @@
 // 对fetch进行二次封装
+import { useUserStore } from '@/store/userStore';
 import qs from 'qs';
 
 const { stringify, parse } = qs;
@@ -7,6 +8,12 @@ const baseUrl = process.env.baseUrl || "http://localhost:3001";
 const checkStatus = (res: { status: number; statusText: string | undefined; }) => {
   if (200 <= res.status && res.status < 300) {
     return res;
+  }
+  if([401, 403].includes(res.status)) {
+    return Promise.reject({
+      code: res.status,
+      data: null,
+    })
   }
   console.log(`网络请求失败,${res.status}`);
   const error: any = new Error(res.statusText);
@@ -37,6 +44,9 @@ const handleError = (error: any) => {
   if (error instanceof TypeError) {
     console.log(`网络请求失败啦！${error}`);
   }
+  if(error?.code) {
+    return Promise.reject(error);
+  }
   return {   //防止页面崩溃，因为每个接口都有判断res.code以及data
     code: -1,
     data: false,
@@ -53,14 +63,21 @@ class FetchRequest {
       mode: 'cors',
       cache: 'no-store',
       headers: {
-        token: null,
         Authorization: null,
-        // 当请求方法是POST，如果不指定content-type是其他类型的话，默认为如下，要求参数传递样式为 key1=value1&key2=value2，但实际场景以json为多
-        // 'content-type': 'application/x-www-form-urlencoded',
       },
     }
     if (options.method === 'POST' || 'PUT') {
       defaultOptions.headers['Content-Type'] = 'application/json; charset=utf-8';
+    }
+    const session: any = sessionStorage.getItem('user-storage');
+    const {isLogin, token} = JSON.parse(session).state;
+    if(isLogin) {
+      defaultOptions.headers.Authorization = `bearer ${token}`;
+    } else if(!['/auth/login', '/auth/register'].includes(url)) {
+      return Promise.reject({
+        code: 401,
+        data: null,
+      });
     }
     const newOptions = {
       ...defaultOptions,
@@ -79,7 +96,6 @@ class FetchRequest {
    * @returns {Promise<unknown>}
    */
    post(url: string, params = {}, option = {}) {
-    console.log('打印baseUrl', baseUrl);
     const options: any = Object.assign({
       method: 'POST',
       headers: {

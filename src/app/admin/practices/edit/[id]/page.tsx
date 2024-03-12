@@ -16,7 +16,7 @@ export default function Page({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const getDetail = async () => {
-      const {code,data,msg} = await get(`http://localhost:3001/practices/${practiceId}`);
+      const {code,data,msg} = await get(`/practices/${practiceId}`);
       
       if(code === 0) {
         setTitle(data.title);

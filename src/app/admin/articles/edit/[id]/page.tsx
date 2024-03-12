@@ -16,9 +16,8 @@ export default function Page({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const getDetail = async () => {
-      const {code,data,msg} = await get(`http://localhost:3001/article/${articleId}`);
+      const {code,data,msg} = await get(`/articles/${articleId}`);
       console.log('获取详情', data);
-      
       if(code === 0) {
         setTitle(data.title);
         setContent(data.content);
@@ -37,7 +36,7 @@ export default function Page({ params }: { params: { id: string } }) {
       title,
       content: cont || ''
     };
-    const {code, data, msg} = await patch(`/article/${articleId}`, params);
+    const {code, data, msg} = await patch(`/articles/${articleId}`, params);
     if(code===0) {
       // alert('创建成功')
       router.back();
@@ -46,7 +45,7 @@ export default function Page({ params }: { params: { id: string } }) {
   
   return (
     <div>
-      <h1 className="page-title">创建文章</h1>
+      <h1 className="page-title">修改文章</h1>
       {
         title ? (<form>
           <div className="flex mb-6">

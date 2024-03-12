@@ -21,7 +21,7 @@ export default function Page() {
       title,
       content: cont || ''
     };
-    const {code, data, msg} = await post('/article/', params);
+    const {code, data, msg} = await post('/articles/', params);
     if(code===0) {
       // alert('创建成功')
       router.back();
