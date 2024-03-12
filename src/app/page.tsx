@@ -1,6 +1,7 @@
 import React from 'react';
 import { fetchBooks } from '@/Server/actions/BookActions';
 import { Pagination } from '@nextui-org/react';
+import { Header } from '@/components/Header';
 type ISearchQuery = {
   page: string;
 }

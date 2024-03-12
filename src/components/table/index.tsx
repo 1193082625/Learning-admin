@@ -1,90 +1,118 @@
-import React from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
+  Selection,
   TableCell,
-  Chip,
-  Tooltip,
+  SortDescriptor,
 } from "@nextui-org/react";
-import { DeleteIcon } from "../icons/DeleteIcon";
-import { EditIcon } from "../icons/Edit";
-import { EyeIcon } from "../icons/EyeIcon";
 import LTableHeader from "./LTableHeader";
 import LTableBottom from "./LTableBottom";
-import RenderTableItem from "./RenderTableItem";
+import RenderTableItem, { TableActions } from "./RenderTableItem";
 
+export interface TableColumn {
+    name: string;
+    uid: string;
+    sortable?: boolean
+}
 
+type TableComProps = {
+  columns: any[];
+  initialColumns: string[];
+  actions?: TableActions;
+  statusOptions: {
+    name: string;
+    uid: string;
+  }[];
+  selectionMode?: any;
+  defaultSelectedKeys?: string[];
+  data: any[],
+  createNew?: Function;
+  [key: string]: any;
+}
 
+export default function TableCom({
+  columns,
+  initialColumns,
+  statusOptions,
+  actions,
+  selectionMode,
+  defaultSelectedKeys,
+  data,
+  createNew,
+  ...props
+}: TableComProps) {
+  type DataItem = typeof data[0];
 
-export default function TableCom({columns, initialColumns, statusOptions, data, ...props}: any) {
-  const [filterValue, setFilterValue] = React.useState("");
-  const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
-  const [visibleColumns, setVisibleColumns] = React.useState(new Set(initialColumns));
-  const [statusFilter, setStatusFilter] = React.useState("all");
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [sortDescriptor, setSortDescriptor] = React.useState({
+  const [filterValue, setFilterValue] = useState<string>("");
+  const [selecteMode, setSelecteMode] = useState(selectionMode || 'multiple');
+  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set(defaultSelectedKeys || []));
+  const [visibleColumns, setVisibleColumns] = useState<Selection>(new Set(initialColumns));
+  const [statusFilter, setStatusFilter] = useState<Selection>("all");
+  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
   });
-  const [page, setPage] = React.useState(1);
+  const [page, setPage] = useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
-  const headerColumns = React.useMemo(() => {
+  const headerColumns = useMemo(() => {
     return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
 
-  const filteredItems = React.useMemo(() => {
-    let filteredUsers = [...data];
+  const filteredItems = useMemo(() => {
+    let filteredData = [...data];
 
     if (hasSearchFilter) {
-      filteredUsers = filteredUsers.filter((user) =>
-        user.name.toLowerCase().includes(filterValue.toLowerCase()),
+      filteredData = filteredData.filter((item) =>
+        (item.name || item.content).toLowerCase().includes(filterValue.toLowerCase()),
       );
     }
     if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-      filteredUsers = filteredUsers.filter((user) =>
-        Array.from(statusFilter).includes(user.status),
+      filteredData = filteredData.filter((item) =>
+        Array.from(statusFilter).includes(item.status),
       );
     }
 
-    return filteredUsers;
+    return filteredData;
   }, [data, filterValue, statusFilter]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
-  const items = React.useMemo(() => {
+  const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
     return filteredItems.slice(start, end);
   }, [page, filteredItems, rowsPerPage]);
 
-  const sortedItems = React.useMemo(() => {
+  const sortedItems = useMemo(() => {
     return [...items].sort((a: any, b: any) => {
-      const first = a[sortDescriptor.column];
-      const second = b[sortDescriptor.column];
+      const first = a[sortDescriptor.column as keyof DataItem] as number;
+      const second = b[sortDescriptor.column as keyof DataItem] as number;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
   }, [sortDescriptor, items]);
 
-  const renderCell = React.useCallback((dataInfo: any, columnKey: any) => {
+  const renderCell = useCallback((dataInfo: DataItem, columnKey: React.Key) => {
     return (
-      <RenderTableItem dataInfo={dataInfo} columnKey={columnKey} />
+      <RenderTableItem dataInfo={dataInfo} columnKey={columnKey} actions={actions} />
     )
   }, []);
 
-  const onRowsPerPageChange = React.useCallback((e: any) => {
+  const onRowsPerPageChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(Number(e.target.value));
     setPage(1);
   }, []);
 
-  const onSearchChange = React.useCallback((value: any) => {
+  const onSearchChange = useCallback((value?: string) => {
     if (value) {
       setFilterValue(value);
       setPage(1);
@@ -101,6 +129,7 @@ export default function TableCom({columns, initialColumns, statusOptions, data, 
   const topContent = React.useMemo(() => {
     return (
       <LTableHeader
+        createNew={createNew}
         filterValue={filterValue}
         columns={columns}
         initialColumns={initialColumns}
@@ -139,16 +168,20 @@ export default function TableCom({columns, initialColumns, statusOptions, data, 
   }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
   return (
+    /**
+     * isHeaderSticky 使表头具有粘性
+     * 
+     */
     <Table
-      aria-label="Example table with custom cells, pagination and sorting"
+      aria-label="table"
       isHeaderSticky
       bottomContent={bottomContent}
       bottomContentPlacement="outside"
       classNames={{
-        wrapper: "max-h-[382px]",
+        wrapper: "min-h-[382px]",
       }}
       selectedKeys={selectedKeys}
-      selectionMode="multiple"
+      selectionMode={selecteMode}
       sortDescriptor={sortDescriptor}
       topContent={topContent}
       topContentPlacement="outside"
@@ -173,8 +206,6 @@ export default function TableCom({columns, initialColumns, statusOptions, data, 
           </TableRow>
         )}
       </TableBody>
-
-      
     </Table>
   );
 }

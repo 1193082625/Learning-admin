@@ -2,9 +2,10 @@
 import qs from 'qs';
 
 const { stringify, parse } = qs;
+const baseUrl = process.env.baseUrl || "http://localhost:3001";
 
 const checkStatus = (res: { status: number; statusText: string | undefined; }) => {
-  if (200 >= res.status && res.status < 300) {
+  if (200 <= res.status && res.status < 300) {
     return res;
   }
   console.log(`网络请求失败,${res.status}`);
@@ -44,6 +45,7 @@ const handleError = (error: any) => {
 
 class FetchRequest {
   static async staticFetch(url: string, options: any = {}) {
+    const _url = url.startsWith('http') ? url : `${baseUrl}${url}`; 
     const defaultOptions: any = {
       /*允许携带cookies*/
       // credentials: 'include',
@@ -64,7 +66,7 @@ class FetchRequest {
       ...defaultOptions,
       ...options,
     }
-    return fetch(url, newOptions)
+    return fetch(_url, newOptions)
       .then(checkStatus)
       .then(judgeOkState as any)
       .then((res: any) => res.json())
@@ -77,7 +79,13 @@ class FetchRequest {
    * @returns {Promise<unknown>}
    */
    post(url: string, params = {}, option = {}) {
-    const options: any = Object.assign({ method: 'POST' }, option);
+    console.log('打印baseUrl', baseUrl);
+    const options: any = Object.assign({
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }, option);
     //一般我们常用场景用的是json，所以需要在headers加Content-Type类型
     options.body = JSON.stringify(params);
 
@@ -97,8 +105,13 @@ class FetchRequest {
    * @param url
    * @returns {Promise<unknown>}
    */
-  put(url: string, params = {}, option = {}) {
-    const options: any = Object.assign({ method: 'PUT' }, option);
+  patch(url: string, params = {}, option = {}) {
+    const options: any = Object.assign({
+      method: 'PATCH',
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }, option);
     options.body = JSON.stringify(params);
     return FetchRequest.staticFetch(url, options); //类的静态方法只能通过类本身调用
   }
@@ -115,5 +128,5 @@ class FetchRequest {
 }
 
 const requestFun = new FetchRequest();
-export const {post, get, put} = requestFun;
+export const {post, get, patch} = requestFun;
 export default requestFun;

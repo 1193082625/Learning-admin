@@ -1,7 +1,4 @@
 import { Chip, Link, Tooltip, User } from "@nextui-org/react";
-import { EditIcon } from "../icons/Edit";
-import { DeleteIcon } from "../icons/DeleteIcon";
-import { useRouter } from "next/navigation";
 
 const statusColorMap = {
   active: "success",
@@ -9,14 +6,25 @@ const statusColorMap = {
   vacation: "warning",
 };
 
-export default function RenderTableItem({dataInfo, columnKey}: any) {
-  const router = useRouter();
-  const cellValue = dataInfo[columnKey];
+interface TableAction {
+  key: string;
+  content: any;
+  tips: string;
+  color?: "success" | "danger" | "warning" | "primary" | "default" | "secondary" | "foreground";
+  onclick: Function;
+}
+export type TableActions = TableAction[];
 
-  const goEdit = (e: any, id: string) => {
-    e.preventDefault();
-    router.push(`/articles/edit/${id}`);
-  }
+type TableItemProps = {
+  dataInfo: any;
+  actions: TableActions | undefined;
+  columnKey: any;
+  [key: string]: any;
+}
+
+export default function RenderTableItem({dataInfo, actions, columnKey, ...props}: TableItemProps) {
+  
+  const cellValue = dataInfo[columnKey];
 
   switch (columnKey) {
     case "title":
@@ -25,7 +33,10 @@ export default function RenderTableItem({dataInfo, columnKey}: any) {
       );
     case "content":
       return (
-        <span>{dataInfo.content}</span>
+        <div
+          className="richtext"
+          dangerouslySetInnerHTML={{ __html: dataInfo.content }}
+        ></div>
       );
     case "like_num":
     case "favourite_num":
@@ -59,26 +70,28 @@ export default function RenderTableItem({dataInfo, columnKey}: any) {
       );
     case "status":
       return (
-        <Chip className="capitalize" color={statusColorMap[dataInfo.status]} size="sm" variant="flat">
+        <Chip className="capitalize" color={statusColorMap[dataInfo.status as keyof typeof statusColorMap] as any} size="sm" variant="flat">
           {cellValue}
         </Chip>
       );
     case "actions":
+      if(!actions?.length) return null;
       return (
         <div className="relative flex items-center gap-2">
-          <Tooltip content="Edit">
-            <span
-              className="text-lg text-default-400 cursor-pointer active:opacity-50"
-              onClick={(e) => goEdit(e, dataInfo._id)}
-            >
-              <EditIcon />
-            </span>
-          </Tooltip>
-          <Tooltip color="danger" content="Delete">
-            <span className="text-lg text-danger cursor-pointer active:opacity-50">
-              <DeleteIcon />
-            </span>
-          </Tooltip>
+          {
+            actions.map((actionItem: TableAction, index) => {
+              return (
+                <Tooltip color={actionItem.color || 'default' } content={actionItem.tips} key={index}>
+                <span
+                  className={['text-lg cursor-pointer active:opacity-50', `text-${actionItem.color}`].join(' ')}
+                  onClick={(e) => actionItem.onclick(e, dataInfo)}
+                >
+                  {actionItem.content}
+                </span>
+              </Tooltip>
+              )
+            })
+          }
         </div>
       );
     default:

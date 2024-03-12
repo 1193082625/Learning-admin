@@ -2,7 +2,7 @@ import { Pagination } from "@nextui-org/react";
 
 export default function LTableBottom({selectedKeys, filteredItems, onRowsPerPageChange, page, pages, setPage, ...props}: any) {
   return (
-    <div className="py-2 px-2 flex justify-between items-center">
+    <div className="py-2 px-2 flex justify-between items-center mt-5">
         <span className="w-[30%] text-small text-default-400">
           {`已选中${selectedKeys.size}条，共${filteredItems.length}条`}
         </span>

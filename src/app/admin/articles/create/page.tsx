@@ -1,5 +1,6 @@
 'use client';
 
+import { post } from "@/api/fetch";
 import { Button, Input } from "@nextui-org/react";
 import { Editor } from "@tinymce/tinymce-react";
 import { useRouter } from "next/navigation";
@@ -16,18 +17,13 @@ export default function Page() {
 
   const createArticle = async () => {
     const cont = editorRef?.current.editor.getContent()
-    const data = {
+    const params = {
       title,
       content: cont || ''
     };
-    const res = await fetch('http://localhost:3001/article/', {
-      method: 'post',
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-    if(res.ok) {
+    const {code, data, msg} = await post('/article/', params);
+    if(code===0) {
+      // alert('创建成功')
       router.back();
     }
   }

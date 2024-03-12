@@ -6,14 +6,44 @@ import { capitalize } from "@/utils/stringsFunc";
 import { PlusIcon } from "../icons/PlusIcon";
 import { useRouter } from "next/navigation";
 
-export default function LTableHeader({totalNum, filterValue, columns, initialColumns,statusOptions, pageChanged, onClear, statusFilter, visibleColumns, setVisibleColumns, onRowsPerPageChange, setStatusFilter, onSearchChange, ...props}: any) {
+const StatusDropdown = ({
+  statusFilter,
+  setStatusFilter,
+  statusOptions,
+}: any) => {
+  return (
+    <Dropdown>
+      <DropdownTrigger className="hidden sm:flex">
+        <Button endContent={<ChevronDownIcon className="text-small" />} variant="flat">
+          状态
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        disallowEmptySelection
+        aria-label="Table Columns"
+        closeOnSelect={false}
+        selectedKeys={statusFilter}
+        selectionMode="multiple"
+        onSelectionChange={setStatusFilter}
+      >
+        {statusOptions.map((status: any) => (
+          <DropdownItem key={status.uid} className="capitalize">
+            {capitalize(status.name)}
+          </DropdownItem>
+        ))}
+      </DropdownMenu>
+    </Dropdown>
+  )
+}
+
+export default function LTableHeader({totalNum, filterValue, columns, initialColumns,statusOptions, pageChanged, onClear, statusFilter, visibleColumns, setVisibleColumns, createNew, onRowsPerPageChange, setStatusFilter, onSearchChange, ...props}: any) {
   const router = useRouter();
     return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-between gap-3 items-end">
+    <div className="flex flex-col gap-4 mb-5">
+      <div className="flex justify-between gap-4 items-end">
         <Input
           isClearable
-          className="w-full sm:max-w-[44%]"
+          className="w-[300px]"
           placeholder="请输入搜索内容"
           startContent={<SearchIcon />}
           value={filterValue}
@@ -21,27 +51,9 @@ export default function LTableHeader({totalNum, filterValue, columns, initialCol
           onValueChange={onSearchChange}
         />
         <div className="flex gap-3">
-          <Dropdown>
-            <DropdownTrigger className="hidden sm:flex">
-              <Button endContent={<ChevronDownIcon className="text-small" />} variant="flat">
-                状态
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              disallowEmptySelection
-              aria-label="Table Columns"
-              closeOnSelect={false}
-              selectedKeys={statusFilter}
-              selectionMode="multiple"
-              onSelectionChange={setStatusFilter}
-            >
-              {statusOptions.map((status: any) => (
-                <DropdownItem key={status.uid} className="capitalize">
-                  {capitalize(status.name)}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+          {
+           statusOptions && statusOptions.length && <StatusDropdown statusFilter={statusFilter} setStatusFilter={setStatusFilter} statusOptions={statusOptions}/>
+          }
           <Dropdown>
             <DropdownTrigger className="hidden sm:flex">
               <Button endContent={<ChevronDownIcon className="text-small" />} variant="flat">
@@ -63,9 +75,14 @@ export default function LTableHeader({totalNum, filterValue, columns, initialCol
               ))}
             </DropdownMenu>
           </Dropdown>
-          <Button color="primary" endContent={<PlusIcon />} onClick={() => router.push('/articles/create')}>
-            新建
-          </Button>
+          {
+            createNew && (
+              <Button color="primary" endContent={<PlusIcon />} onClick={createNew}>
+                新建
+              </Button>
+            )
+          }
+          
         </div>
       </div>
     </div>

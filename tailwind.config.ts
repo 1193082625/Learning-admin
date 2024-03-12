@@ -10,6 +10,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // colors: {
+      //   'border-eef1f6': '#eef1f6',
+      // },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
